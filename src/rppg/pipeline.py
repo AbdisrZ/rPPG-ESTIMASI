@@ -48,6 +48,12 @@ class StreamingProcessor:
         self._t_hitung = -np.inf
         self._bpm = None
         self._conf = None
+        self._pulsa = None
+
+    @property
+    def pulsa(self):
+        """Sinyal pulsa (grid seragam fs_grid) dari perhitungan BPM terakhir, atau None."""
+        return self._pulsa
 
     @property
     def t_terakhir(self) -> float | None:
@@ -79,7 +85,7 @@ class StreamingProcessor:
             ts = np.array([b[0] for b in self._buf])
             xs = np.stack([b[1] for b in self._buf])
             _, grid_rgb = resampel_seragam(ts, xs, self.fs_grid)
-            self._bpm, self._conf = estimasi_bpm(METODE[self.metode](grid_rgb, self.fs_grid, self.band),
-                                                 self.fs_grid, self.band)
+            self._pulsa = METODE[self.metode](grid_rgb, self.fs_grid, self.band)
+            self._bpm, self._conf = estimasi_bpm(self._pulsa, self.fs_grid, self.band)
         status = "direset" if direset else ("ok" if self._bpm is not None else "mengumpulkan")
         return self.keadaan(t, status, baru)

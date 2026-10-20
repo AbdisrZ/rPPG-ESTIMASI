@@ -35,8 +35,10 @@ class PengekstrakRGB:
         self.n = int(cfg_roi["deteksi_tiap_n_frame"])
         self._ukur = pengukur.ukur if pengukur else (lambda _: nullcontext())
         self._i, self._kotak = 0, None
+        self.roi_terakhir = None  # (x0, y0, x1, y1) frame terakhir, untuk pratinjau antarmuka
 
     def proses(self, frame):
+        self.roi_terakhir = None
         if frame is None or frame.size == 0:  # frame kosong: tidak dihitung dalam irama deteksi
             return None
         if self._i % self.n == 0:
@@ -45,6 +47,7 @@ class PengekstrakRGB:
         self._i += 1
         with self._ukur("roi_rgb"):
             roi = roi_dahi(self._kotak, frame.shape, self.cfg_roi) if self._kotak is not None else None
+            self.roi_terakhir = roi
             if roi is None:
                 return None
             x0, y0, x1, y1 = roi

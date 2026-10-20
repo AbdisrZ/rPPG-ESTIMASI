@@ -6,6 +6,9 @@ wajah: {model: blaze_face_short_range.tflite}
 # jeda_maks_detik: jeda antar sampel (mis. wajah hilang) yang lebih lama dari ini mengosongkan buffer;
 # kamera_gagal_maks: read() gagal berturut-turut sebelum sesi kamera dihentikan (KameraGagal).
 ketahanan: {jeda_maks_detik: 1.0, kamera_gagal_maks: 15}
+# Aplikasi (python -m rppg.app). fps: kurangi_fps pada sumber (0 = mati), sama dengan latensi.fps;
+# latensi_jendela_frame: banyak frame terakhir untuk median/p95 ms proses yang ditampilkan.
+aplikasi: {fps: 15, metode: chrom, latensi_jendela_frame: 30, folder_sesi: results/sesi}
 latensi: {detik_bawaan: 60, metode: chrom, fps: 15, folder_hasil: results/latensi}  # fps: kurangi_fps pada sumber
 
 # Evaluasi offline. Penyelarasan: estimasi pada waktu t (sampel terakhir jendela) dibandingkan

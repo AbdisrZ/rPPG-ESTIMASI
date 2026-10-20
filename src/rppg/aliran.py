@@ -18,6 +18,7 @@ PESAN = {
     "wajah_hilang": "Wajah tidak terdeteksi",
     "frame_kosong": "Frame kosong dari sumber",
     "kamera_gagal": "Kamera berhenti mengirim frame",
+    "video_selesai": "Video selesai",
 }
 
 
