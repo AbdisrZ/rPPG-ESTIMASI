@@ -49,6 +49,31 @@ def test_kurangi_fps_berbasis_timestamp():
     assert np.all(np.diff(hasil) > 1 / 30 + 0.005)  # tidak pernah dua frame berurutan asli
 
 
+def kamera_15fps_tertunda(n=450, tunda_maks=0.045, seed=1):
+    # jam sensor tetap ~15 fps; timestamp = saat read() kembali, tertunda 0..45 ms oleh pemrosesan
+    rng = np.random.default_rng(seed)
+    return np.maximum.accumulate(np.arange(n) / 15.0 + rng.uniform(0, tunda_maks, n))
+
+
+def test_kurangi_fps_sumber_sudah_15fps_tertunda_tidak_dibuang():
+    t = kamera_15fps_tertunda()
+    hasil = list(kurangi_fps(((None, ti) for ti in t), 15))
+    assert len(hasil) >= 0.98 * len(t)
+
+
+def test_kurangi_fps_sumber_macet_tanpa_ledakan_frame():
+    t = np.concatenate([np.arange(0, 5, 1 / 30), 6.0 + np.arange(0, 5, 1 / 30)])  # macet 1 s
+    hasil = np.array([ti for _, ti in kurangi_fps(((None, ti) for ti in t), 15)])
+    assert np.diff(hasil).min() >= 0.4 / 15 - 1e-9
+    assert abs(len(hasil) - 150) <= 2
+
+
+def test_kurangi_fps_laju_rata_rata_tidak_melebihi_target():
+    t = np.arange(0, 30, 1 / 22)  # 22 fps -> 15 fps
+    hasil = [ti for _, ti in kurangi_fps(((None, ti) for ti in t), 15)]
+    assert abs(len(hasil) / 30 - 15) <= 0.5
+
+
 def test_kurangi_fps_lebih_tinggi_dari_asli_tidak_menambah():
     t = np.arange(0, 2, 1 / 15)
     assert len(list(kurangi_fps(((None, ti) for ti in t), 30))) == len(t)

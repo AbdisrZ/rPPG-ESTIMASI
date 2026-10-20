@@ -1,9 +1,11 @@
 """Evaluasi offline: dataset -> (kurangi fps) -> wajah/ROI -> RGB -> StreamingProcessor -> metrik.
 
 Definisi:
-- kurangi_fps: grid waktu berjangkar pada timestamp frame pertama dengan jarak 1/fps; tiap slot
-  mengambil paling banyak satu frame, yaitu frame pertama dengan t >= slot - toleransi (1/4 periode
-  target). Ini simulasi berbasis timestamp, bukan kamera dengan fps tersebut.
+- kurangi_fps: grid target berjarak 1/fps berjangkar pada frame pertama; frame diambil bila
+  t >= target - TOLERANSI_SLOT x periode, lalu target maju satu periode. Frame terlambat tidak
+  menggeser grid (keterlambatan baca tidak menumpuk pada kamera); hanya bila sumber macet
+  >= satu periode, slot yang terlewat dilompati tanpa mengubah fase. Laju rata-rata keluaran
+  = min(fps target, fps masukan). Ini simulasi berbasis timestamp, bukan kamera dengan fps tersebut.
 - Penyelarasan: estimasi yang dihitung pada waktu t (sampel terakhir jendela) dibandingkan dengan
   rata-rata HR referensi dalam [t - sinyal.jendela_detik, t]; sampel referensi di luar
   evaluasi.hr_ref_valid_bpm diabaikan. Tanpa sampel valid -> hr_ref NaN (tidak dihitung).
@@ -26,18 +28,20 @@ from .pipeline import StreamingProcessor
 from .wajah import PengekstrakRGB
 
 BELUM = "belum diukur"
-TOLERANSI_SLOT = 0.25  # bagian dari periode target; definisi algoritma, bukan parameter eksperimen
+TOLERANSI_SLOT = 0.4  # bagian dari periode target; definisi algoritma, bukan parameter eksperimen
 
 
 def kurangi_fps(frames, fps: float):
     periode = 1.0 / fps
-    t0, slot = None, 0
+    target = None
     for f, t in frames:
-        if t0 is None:
-            t0 = t
-        if t >= t0 + slot * periode - TOLERANSI_SLOT * periode:
+        if target is None:
+            target = t
+        if t >= target + periode:  # sumber macet: lompati slot terlewat, fase grid tetap
+            target += periode * np.floor((t - target) / periode)
+        if t >= target - TOLERANSI_SLOT * periode:
             yield f, t
-            slot = max(slot + 1, int(round((t - t0) / periode)) + 1)
+            target += periode
 
 
 def ekstrak_rgb(frames, pencari, cfg_roi: dict):
