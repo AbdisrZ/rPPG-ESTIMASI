@@ -1,6 +1,8 @@
 """Deteksi wajah (MediaPipe Tasks FaceDetector) dan ROI dahi."""
 from __future__ import annotations
 
+from contextlib import nullcontext
+
 from .config import RAIZ
 
 
@@ -19,6 +21,32 @@ def roi_dahi(kotak, bentuk, cfg_roi: dict):
     if x1 <= x0 or y1 <= y0:
         return None
     return int(x0), int(y0), int(x1), int(y1)
+
+
+class PengekstrakRGB:
+    """Frame RGB -> rata-rata RGB ROI dahi, atau None bila wajah/ROI tidak ada.
+
+    Deteksi wajah tiap roi.deteksi_tiap_n_frame; kotak terakhir dipakai di antaranya.
+    `pengukur` (opsional) mencatat tahap deteksi_wajah dan roi_rgb.
+    """
+
+    def __init__(self, pencari, cfg_roi: dict, pengukur=None):
+        self.pencari, self.cfg_roi = pencari, cfg_roi
+        self.n = int(cfg_roi["deteksi_tiap_n_frame"])
+        self._ukur = pengukur.ukur if pengukur else (lambda _: nullcontext())
+        self._i, self._kotak = 0, None
+
+    def proses(self, frame):
+        if self._i % self.n == 0:
+            with self._ukur("deteksi_wajah"):
+                self._kotak = self.pencari.cari(frame)
+        self._i += 1
+        with self._ukur("roi_rgb"):
+            roi = roi_dahi(self._kotak, frame.shape, self.cfg_roi) if self._kotak is not None else None
+            if roi is None:
+                return None
+            x0, y0, x1, y1 = roi
+            return frame[y0:y1, x0:x1].reshape(-1, 3).mean(axis=0)
 
 
 class PencariMediaPipe:

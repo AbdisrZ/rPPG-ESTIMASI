@@ -14,6 +14,27 @@ def _buka_opencv(indeks: int, backend: str):
     return cv2.VideoCapture(indeks, getattr(cv2, f"CAP_{backend}"))
 
 
+def baca_video(path):
+    """Berkas video -> iterator (frame RGB, t = indeks / fps kontainer). Galat bila tidak bisa dibuka."""
+    import cv2
+
+    cap = cv2.VideoCapture(str(path))
+    fps = cap.get(cv2.CAP_PROP_FPS) if cap.isOpened() else 0
+    if not fps or fps <= 0:
+        cap.release()
+        raise RuntimeError(f"video tidak bisa dibuka atau fps tidak terbaca: {path}")
+    i = 0
+    try:
+        while True:
+            ok, f = cap.read()
+            if not ok:
+                break
+            yield cv2.cvtColor(f, cv2.COLOR_BGR2RGB), i / fps
+            i += 1
+    finally:
+        cap.release()
+
+
 class SumberKamera:
     """Membaca webcam; tiap frame diberi timestamp time.perf_counter saat read() kembali.
 

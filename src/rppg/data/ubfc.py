@@ -17,6 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
+from ..sumber import baca_video
 from . import FormatTidakSesuai, Rekaman
 
 
@@ -34,19 +35,10 @@ def _buka(p: Path):
 
 
 def _frames(p: Path):
-    import cv2
-
-    cap, fps = _buka(p)
-    i = 0
     try:
-        while True:
-            ok, f = cap.read()
-            if not ok:
-                break
-            yield cv2.cvtColor(f, cv2.COLOR_BGR2RGB), i / fps
-            i += 1
-    finally:
-        cap.release()
+        yield from baca_video(p)
+    except RuntimeError as e:
+        raise FormatTidakSesuai(str(e)) from e
 
 
 def _durasi_video(p: Path) -> float:

@@ -23,7 +23,7 @@ import pandas as pd
 
 from .metrik import bland_altman, mae, persen_dalam, rmse
 from .pipeline import StreamingProcessor
-from .wajah import roi_dahi
+from .wajah import PengekstrakRGB
 
 BELUM = "belum diukur"
 TOLERANSI_SLOT = 0.25  # bagian dari periode target; definisi algoritma, bukan parameter eksperimen
@@ -41,19 +41,10 @@ def kurangi_fps(frames, fps: float):
 
 
 def ekstrak_rgb(frames, pencari, cfg_roi: dict):
-    """Yield (t, rata-rata RGB ROI dahi) atau (t, None) bila wajah/ROI tidak ada.
-    Deteksi wajah tiap roi.deteksi_tiap_n_frame; kotak terakhir dipakai di antaranya."""
-    n = int(cfg_roi["deteksi_tiap_n_frame"])
-    kotak = None
-    for i, (f, t) in enumerate(frames):
-        if i % n == 0:
-            kotak = pencari.cari(f)
-        roi = roi_dahi(kotak, f.shape, cfg_roi) if kotak is not None else None
-        if roi is None:
-            yield t, None
-            continue
-        x0, y0, x1, y1 = roi
-        yield t, f[y0:y1, x0:x1].reshape(-1, 3).mean(axis=0)
+    """Yield (t, rata-rata RGB ROI dahi) atau (t, None) bila wajah/ROI tidak ada (lihat PengekstrakRGB)."""
+    ex = PengekstrakRGB(pencari, cfg_roi)
+    for f, t in frames:
+        yield t, ex.proses(f)
 
 
 def hr_ref_jendela(t_ref, hr_ref, t: float, jendela: float, rentang) -> float:
