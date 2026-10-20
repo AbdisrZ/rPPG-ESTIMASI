@@ -2,3 +2,17 @@ roi: {lebar: 0.40, tinggi: 0.15, geser_y: 0.05, deteksi_tiap_n_frame: 10}
 sinyal: {jendela_detik: 10, band_hz: [0.7, 4.0]}
 kamera: {indeks: 0, backend: DSHOW, lebar: 640, tinggi: 480, pemanasan_frame: 10}
 cek_kamera: {detik_bawaan: 30, folder_hasil: results/kamera}
+wajah: {model: blaze_face_short_range.tflite}
+
+# Evaluasi offline. Penyelarasan: estimasi pada waktu t (sampel terakhir jendela) dibandingkan
+# dengan rata-rata HR referensi pada jendela yang sama [t - sinyal.jendela_detik, t].
+evaluasi:
+  kondisi_fps: [15]          # kondisi resmi; 30 dan 10 hanya opsi tambahan lewat --fps
+  metode: [chrom, pos, hijau]
+  batas_galat_bpm: 5
+  hr_ref_valid_bpm: [30, 240] # sampel HR referensi di luar rentang ini diabaikan
+  folder_hasil: results/evaluasi
+
+# Jalur dataset milik mesin ini diisi di config/lokal.yaml (tidak di-commit), contoh:
+# dataset: {ubfc: D:/data/UBFC/DATASET_2, pure: D:/data/PURE}
+dataset: {ubfc: null, pure: null}

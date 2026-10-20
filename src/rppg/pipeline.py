@@ -16,6 +16,7 @@ class Keadaan:
     n_sampel: int
     bpm: float | None = None
     confidence: float | None = None
+    diperbarui: bool = False  # True bila bpm dihitung ulang pada push ini
 
 
 class StreamingProcessor:
@@ -39,11 +40,13 @@ class StreamingProcessor:
         while self._buf and t - self._buf[0][0] > self.jendela:
             self._buf.popleft()
         durasi = self._buf[-1][0] - self._buf[0][0]
-        if durasi >= 0.8 * self.jendela and t - self._t_hitung >= self.perbarui_tiap:
+        baru = durasi >= 0.8 * self.jendela and t - self._t_hitung >= self.perbarui_tiap
+        if baru:
             self._t_hitung = t
             ts = np.array([b[0] for b in self._buf])
             xs = np.stack([b[1] for b in self._buf])
             _, grid_rgb = resampel_seragam(ts, xs, self.fs_grid)
             self._bpm, self._conf = estimasi_bpm(METODE[self.metode](grid_rgb, self.fs_grid, self.band),
                                                  self.fs_grid, self.band)
-        return Keadaan(t=float(t), n_sampel=len(self._buf), bpm=self._bpm, confidence=self._conf)
+        return Keadaan(t=float(t), n_sampel=len(self._buf), bpm=self._bpm, confidence=self._conf,
+                       diperbarui=baru)
