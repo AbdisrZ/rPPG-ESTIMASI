@@ -1,3 +1,4 @@
 roi: {lebar: 0.40, tinggi: 0.15, geser_y: 0.05, deteksi_tiap_n_frame: 10}
 sinyal: {jendela_detik: 10, band_hz: [0.7, 4.0]}
-kamera: {indeks: 0, backend: DSHOW, lebar: 640, tinggi: 480}
+kamera: {indeks: 0, backend: DSHOW, lebar: 640, tinggi: 480, pemanasan_frame: 10}
+cek_kamera: {detik_bawaan: 30, folder_hasil: results/kamera}
