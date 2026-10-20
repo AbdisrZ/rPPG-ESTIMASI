@@ -37,6 +37,8 @@ class PengekstrakRGB:
         self._i, self._kotak = 0, None
 
     def proses(self, frame):
+        if frame is None or frame.size == 0:  # frame kosong: tidak dihitung dalam irama deteksi
+            return None
         if self._i % self.n == 0:
             with self._ukur("deteksi_wajah"):
                 self._kotak = self.pencari.cari(frame)

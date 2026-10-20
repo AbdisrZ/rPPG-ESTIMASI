@@ -1,4 +1,4 @@
-import json
+﻿import json
 
 import numpy as np
 import pandas as pd
@@ -6,7 +6,8 @@ import pandas as pd
 from rppg.latensi import Pengukur, ringkas, tulis_hasil, ukur_pipeline
 
 CFG = {"roi": {"lebar": 0.40, "tinggi": 0.15, "geser_y": 0.05, "deteksi_tiap_n_frame": 10},
-       "sinyal": {"jendela_detik": 10, "band_hz": [0.7, 4.0]}}
+       "sinyal": {"jendela_detik": 10, "band_hz": [0.7, 4.0]},
+       "ketahanan": {"jeda_maks_detik": 1.0, "kamera_gagal_maks": 15}}
 
 
 class JamManual:

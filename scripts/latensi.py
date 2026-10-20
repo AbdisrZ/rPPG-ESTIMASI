@@ -12,7 +12,7 @@ from rppg.config import RAIZ, muat
 from rppg.evaluasi import kurangi_fps
 from rppg.jejak import meta_dasar
 from rppg.latensi import ringkas, tulis_hasil, ukur_pipeline
-from rppg.sumber import SumberKamera, baca_video
+from rppg.sumber import KameraGagal, SumberKamera, baca_video
 from rppg.wajah import PencariMediaPipe
 
 cfg = muat()
@@ -49,6 +49,8 @@ else:
                                 ke_rgb=lambda f: cv2.cvtColor(f, cv2.COLOR_BGR2RGB))
         sumber_info = {"jenis": "kamera", "driver": kamera.info(),
                        "n_dibaca": kamera.n_dibaca, "n_duplikat": kamera.n_duplikat}
+    except KameraGagal as e:
+        sys.exit(f"Gagal di tengah sesi: {e}. Hasil sesi ini tidak disimpan.")
     finally:
         kamera.tutup()
 

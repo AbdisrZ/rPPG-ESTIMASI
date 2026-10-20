@@ -14,6 +14,10 @@ def _buka_opencv(indeks: int, backend: str):
     return cv2.VideoCapture(indeks, getattr(cv2, f"CAP_{backend}"))
 
 
+class KameraGagal(RuntimeError):
+    pass
+
+
 def baca_video(path):
     """Berkas video -> iterator (frame RGB, t = indeks / fps kontainer). Galat bila tidak bisa dibuka."""
     import cv2
@@ -44,7 +48,9 @@ class SumberKamera:
     """
 
     def __init__(self, cfg: dict | None = None, buka=_buka_opencv, jam=time.perf_counter):
-        k = (cfg or muat())["kamera"]
+        cfg = cfg or muat()
+        k = cfg["kamera"]
+        self.gagal_maks = int(cfg["ketahanan"]["kamera_gagal_maks"])
         self.backend = k["backend"]
         self.jam = jam
         self.cap = buka(int(k["indeks"]), self.backend)
@@ -77,7 +83,17 @@ class SumberKamera:
         return f, t, dup
 
     def __iter__(self):
-        while (r := self.baca_mentah()) is not None:
+        """Frame unik (frame, t). read() gagal sesaat dilewati; gagal berturut-turut
+        >= ketahanan.kamera_gagal_maks melempar KameraGagal."""
+        gagal = 0
+        while True:
+            r = self.baca_mentah()
+            if r is None:
+                gagal += 1
+                if gagal >= self.gagal_maks:
+                    raise KameraGagal(f"kamera gagal membaca {gagal} kali berturut-turut")
+                continue
+            gagal = 0
             if not r[2]:
                 yield r[0], r[1]
 

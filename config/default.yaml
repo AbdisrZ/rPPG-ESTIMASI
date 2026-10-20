@@ -3,6 +3,9 @@ sinyal: {jendela_detik: 10, band_hz: [0.7, 4.0]}
 kamera: {indeks: 0, backend: DSHOW, lebar: 640, tinggi: 480, pemanasan_frame: 10}
 cek_kamera: {detik_bawaan: 30, folder_hasil: results/kamera}
 wajah: {model: blaze_face_short_range.tflite}
+# jeda_maks_detik: jeda antar sampel (mis. wajah hilang) yang lebih lama dari ini mengosongkan buffer;
+# kamera_gagal_maks: read() gagal berturut-turut sebelum sesi kamera dihentikan (KameraGagal).
+ketahanan: {jeda_maks_detik: 1.0, kamera_gagal_maks: 15}
 latensi: {detik_bawaan: 60, metode: chrom, fps: 15, folder_hasil: results/latensi}  # fps: kurangi_fps pada sumber
 
 # Evaluasi offline. Penyelarasan: estimasi pada waktu t (sampel terakhir jendela) dibandingkan

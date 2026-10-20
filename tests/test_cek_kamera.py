@@ -5,9 +5,10 @@ import numpy as np
 import pytest
 
 from rppg.cek_kamera import jalankan_cek, ringkas, tulis_hasil
-from rppg.sumber import SumberKamera
+from rppg.sumber import KameraGagal, SumberKamera
 
-CFG = {"kamera": {"indeks": 0, "backend": "DSHOW", "lebar": 640, "tinggi": 480, "pemanasan_frame": 2}}
+CFG = {"kamera": {"indeks": 0, "backend": "DSHOW", "lebar": 640, "tinggi": 480, "pemanasan_frame": 2},
+       "ketahanan": {"jeda_maks_detik": 1.0, "kamera_gagal_maks": 15}}
 
 
 class CapTiruan:
@@ -60,7 +61,10 @@ def test_sumber_buang_duplikat_dan_timestamp():
     cap = CapTiruan([frame(9), frame(9), frame(1), frame(1), frame(2), frame(3)])
     jam = JamTiruan([0.1] * 20)
     s = SumberKamera(CFG, buka=lambda i, b: cap, jam=jam)
-    hasil = list(s)
+    hasil = []
+    with pytest.raises(KameraGagal):  # setelah frame habis kamera tiruan terus gagal
+        for x in s:
+            hasil.append(x)
     assert [int(f[0, 0, 0]) for f, _ in hasil] == [1, 2, 3]
     ts = [t for _, t in hasil]
     assert ts == sorted(ts)

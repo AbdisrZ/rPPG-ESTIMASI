@@ -11,6 +11,7 @@ from rppg.wajah import roi_dahi
 
 CFG = {"roi": {"lebar": 0.40, "tinggi": 0.15, "geser_y": 0.05, "deteksi_tiap_n_frame": 10},
        "sinyal": {"jendela_detik": 10, "band_hz": [0.7, 4.0]},
+       "ketahanan": {"jeda_maks_detik": 1.0, "kamera_gagal_maks": 15},
        "evaluasi": {"kondisi_fps": [15], "metode": ["chrom", "pos", "hijau"], "batas_galat_bpm": 5,
                     "hr_ref_valid_bpm": [30, 240], "folder_hasil": "results/evaluasi"}}
 
